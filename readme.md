@@ -8,10 +8,11 @@
 -   sudo npm install -g sql-cli
 -   mssql -u sa -p password
 
-## Rest API
+## Packages
 -   npm i express
 -   npm i --save-dev nodemon
 -   npm i mssql
+-   npm i cors
 
 ## Documentation
 -   [github.com/tediousjs/node-mssql](https://github.com/tediousjs/node-mssql)
