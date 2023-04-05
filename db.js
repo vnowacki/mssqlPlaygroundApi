@@ -13,19 +13,10 @@ const config = {
     }
 }
 
-const makeStandardRequest = async (query) => {
+const connection = async () => {
     return sql.connect(config).then(pool => {      
-        return pool.request().query(query)
-    })
-}
-
-const runProcedure = async (procedureName, input, output) => {
-    return sql.connect(config).then(pool => {
         return pool.request()
-            .input('input_parameter', input.type, input.value)
-            .output('output_parameter', output.type)
-            .execute(procedureName)
     })
 }
 
-module.exports = { makeStandardRequest, runProcedure }
+module.exports = connection

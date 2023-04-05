@@ -8,7 +8,14 @@
 -   sudo npm install -g sql-cli
 -   mssql -u sa -p password
 
-## Packages
+## Restore database in docker
+-   sudo docker exec -it example_sql_server mkdir /var/opt/mssql/backup
+-   sudo docker cp database.bak example_sql_server:/var/opt/mssql/backup
+-   enable Preview Features in Azure Data Studio (Settings -> Workbench)
+-   click Manage on connection and then Restore option
+-   choose file from /var/opt/mssql/backup
+
+## Packages install
 -   npm i express
 -   npm i --save-dev nodemon
 -   npm i mssql
