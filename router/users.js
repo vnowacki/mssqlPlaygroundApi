@@ -5,7 +5,13 @@ const sql = require("mssql")
 
 router.get('/', (req, res) => {
     connection().then(conn => conn
-        .query(`SELECT name, surname FROM app.users`)
+        .query(`
+            SELECT 
+                name,
+                surname, 
+                FORMAT (account_created, 'dd/MM/yyyy') as date_created
+            FROM app.users
+        `)
         .then(response => {res.send(response.recordset)})
         .catch(err => console.log(err))
     )
@@ -15,7 +21,14 @@ router.get('/:id', (req, res) => {
     if(!isNaN(id))
         connection().then(conn => conn
             .input('id', sql.Int, id)
-            .query(`SELECT name, surname FROM app.users WHERE id = @id`)
+            .query(`
+                SELECT 
+                    name,
+                    surname, 
+                    FORMAT (account_created, 'dd/MM/yyyy') as date_created
+                FROM app.users
+                WHERE id = @id
+            `)
             .then(response => res.send(response.recordset))
             .catch(err => console.log(err))
         )
