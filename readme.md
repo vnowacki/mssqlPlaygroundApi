@@ -37,6 +37,7 @@
 -   POST /auth/token (body: token) - refresh token
 -   DELETE /auth - logout, delete refresh token
 
+Requests with header: Authorization = Bearer TOKEN
 -   GET /users - get list of all users
 -   POST /users/id - get info about one user
 -   POST /users (body: username, password, name, surname, lastLogged) - insert user to database
