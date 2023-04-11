@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const { test } = require('../db')
+const { authenticateToken } = require('../authToken')
 const sql = require("mssql")
 
-router.get('/', (req, res) => {
+router.get('/', authenticateToken, (req, res) => {
     test().then(conn => conn
         .query(`
             SELECT 
@@ -16,7 +17,7 @@ router.get('/', (req, res) => {
         .catch(err => console.log(err))
     )
 })
-router.get('/:id', (req, res) => {
+router.get('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
     if(!isNaN(id))
         test().then(conn => conn
@@ -33,7 +34,7 @@ router.get('/:id', (req, res) => {
             .catch(err => console.log(err))
         )
 })
-router.post('/', (req, res) => {
+router.post('/', authenticateToken, (req, res) => {
     const user = {...req.body}
     test().then(conn => conn
         .input('username', sql.VarChar(30), user.username)
@@ -47,7 +48,7 @@ router.post('/', (req, res) => {
         .catch(err => console.log(err))
     )
 })
-router.patch('/:id', (req, res) => {
+router.patch('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
     const user = {...req.body}
     test().then(conn => conn
@@ -63,7 +64,7 @@ router.patch('/:id', (req, res) => {
         .catch(err => console.log(err))
     )
 })
-router.delete('/:id', (req, res) => {
+router.delete('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
     if(!isNaN(id))
         test().then(conn => conn

@@ -15,14 +15,30 @@
 -   click Manage on connection and then Restore option
 -   choose file from /var/opt/mssql/backup
 
-## Packages install
+## Packages
 -   npm i express
 -   npm i --save-dev nodemon
 -   npm i mssql
 -   npm i cors
-
-## Documentation
--   [github.com/tediousjs/node-mssql](https://github.com/tediousjs/node-mssql)
+-   npm i dotenv
+-   npm i jsonwebtoken
 
 ## In case of problems
 -   npm cache clean --force
+
+## MSSql Documentation
+-   [github.com/tediousjs/node-mssql](https://github.com/tediousjs/node-mssql)
+
+## Generating example tokens for env
+-   require('crypto').randomBytes(64).toString('hex')
+
+## API documentation
+-   POST /auth (body: username, password) - authenticate user
+-   POST /auth/token (body: token) - refresh token
+-   DELETE /auth - logout, delete refresh token
+
+-   GET /users - get list of all users
+-   POST /users/id - get info about one user
+-   POST /users (body: username, password, name, surname, lastLogged) - insert user to database
+-   PATCH /users/id (body: username, password, name, surname, lastLogged) - update user in database
+-   DELETE /users/id - delete user from database
