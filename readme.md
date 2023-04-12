@@ -16,12 +16,12 @@
 -   choose file from /var/opt/mssql/backup
 
 ## Packages
--   npm i express
--   npm i --save-dev nodemon
--   npm i mssql
--   npm i cors
--   npm i dotenv
--   npm i jsonwebtoken
+-   express
+-   nodemon
+-   mssql
+-   cors
+-   dotenv
+-   jsonwebtoken
 
 ## In case of problems
 -   npm cache clean --force
@@ -43,3 +43,8 @@ Requests with header: Authorization = Bearer TOKEN
 -   POST /users (body: username, password, name, surname, lastLogged) - insert user to database
 -   PATCH /users/id (body: username, password, name, surname, lastLogged) - update user in database
 -   DELETE /users/id - delete user from database
+
+## Run
+-   npm install (install dependencies)
+-   npm run dev (run in development mode with nodemon)
+-   npm start (production)
