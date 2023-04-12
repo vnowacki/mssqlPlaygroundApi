@@ -8,6 +8,7 @@ router.get('/', authenticateToken, (req, res) => {
     test().then(conn => conn
         .query(`
             SELECT 
+                id,
                 name,
                 surname, 
                 FORMAT (account_created, 'dd/MM/yyyy') as date_created
@@ -70,7 +71,7 @@ router.delete('/:id', authenticateToken, (req, res) => {
         test().then(conn => conn
             .input('id', sql.Int, id)
             .query(`DELETE FROM app.users WHERE id = @id`)
-            .then(response => res.send(response.rowsAffected))
+            .then(response => res.send({ deleted: parseInt(response.rowsAffected[0]) }))
             .catch(err => console.log(err))
         )
 })
