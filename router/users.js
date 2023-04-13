@@ -11,6 +11,8 @@ router.get('/', authenticateToken, (req, res) => {
                 id,
                 name,
                 surname, 
+                username,
+                ISNULL(FORMAT (last_logged, 'dd/MM/yyyy'), 'brak') as date_logged,
                 FORMAT (account_created, 'dd/MM/yyyy') as date_created
             FROM app.users
         `)
@@ -27,6 +29,8 @@ router.get('/:id', authenticateToken, (req, res) => {
                 SELECT 
                     name,
                     surname, 
+                    username,
+                    ISNULL(FORMAT (last_logged, 'dd/MM/yyyy'), 'brak') as date_logged,
                     FORMAT (account_created, 'dd/MM/yyyy') as date_created
                 FROM app.users
                 WHERE id = @id
