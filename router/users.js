@@ -22,22 +22,21 @@ router.get('/', authenticateToken, (req, res) => {
 })
 router.get('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
-    if(!isNaN(id))
-        test().then(conn => conn
-            .input('id', sql.Int, id)
-            .query(`
-                SELECT 
-                    name,
-                    surname, 
-                    username,
-                    ISNULL(FORMAT (last_logged, 'dd/MM/yyyy'), 'brak') as date_logged,
-                    FORMAT (account_created, 'dd/MM/yyyy') as date_created
-                FROM app.users
-                WHERE id = @id
-            `)
-            .then(response => res.send(response.recordset))
-            .catch(err => console.log(err))
-        )
+    test().then(conn => conn
+        .input('id', sql.UniqueIdentifier, id)
+        .query(`
+            SELECT 
+                name,
+                surname, 
+                username,
+                ISNULL(FORMAT (last_logged, 'dd/MM/yyyy'), 'brak') as date_logged,
+                FORMAT (account_created, 'dd/MM/yyyy') as date_created
+            FROM app.users
+            WHERE id = @id
+        `)
+        .then(response => res.send(response.recordset))
+        .catch(err => console.log(err))
+    )
 })
 router.post('/', authenticateToken, (req, res) => {
     const user = {...req.body}
@@ -57,12 +56,11 @@ router.patch('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
     const user = {...req.body}
     test().then(conn => conn
-        .input('id', sql.Int, id)
+        .input('id', sql.UniqueIdentifier, id)
         .input('username', sql.VarChar(30), user.username)
         .input('password', sql.VarChar(100), user.password)
         .input('name', sql.NVarChar(30), user.name)
         .input('surname', sql.NVarChar(30), user.surname)
-        .input('lastLogged', sql.DateTime, user.lastLogged)
         .output('response', sql.VarChar(sql.MAX))
         .execute('dbo.alterUser')
         .then(response => res.send(response.output))
@@ -71,13 +69,15 @@ router.patch('/:id', authenticateToken, (req, res) => {
 })
 router.delete('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
-    if(!isNaN(id))
+    const user = req.user
+    if(id !== user.uuid)
         test().then(conn => conn
-            .input('id', sql.Int, id)
+            .input('id', sql.UniqueIdentifier, id)
             .query(`DELETE FROM app.users WHERE id = @id`)
             .then(response => res.send({ deleted: parseInt(response.rowsAffected[0]) }))
             .catch(err => console.log(err))
         )
+    else res.send({ error: 'loggedUserDeletion' })
 })
 
 module.exports = router;

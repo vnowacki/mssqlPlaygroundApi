@@ -14,9 +14,11 @@ router.post('/', (req, res) => {
         .input('username', sql.VarChar(30), user.username)
         .input('password', sql.VarChar(100), user.password)
         .output('response', sql.VarChar(sql.MAX))
+        .output('uuid', sql.UniqueIdentifier)
         .execute('dbo.loginUser')
         .then(response => {
             if(response.output.response == 'success') {
+                user.uuid = response.output.uuid
                 const accessToken = generateAccessToken(user, TOKEN_EXPIRY)
                 const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN)
                 refreshTokens.push(refreshToken)
@@ -35,7 +37,7 @@ router.post('/token', (req, res) => {
     if(!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (err, user) => {
         if(err) return res.sendStatus(403)
-        const accessToken = generateAccessToken({ username: user.username, password: user.password }, TOKEN_EXPIRY)
+        const accessToken = generateAccessToken({ uuid: user.uuid, username: user.username, password: user.password }, TOKEN_EXPIRY)
         res.json({ accessToken: accessToken })
     })
 })
