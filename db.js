@@ -8,11 +8,11 @@ const options = {
 }
 
 const config = {
-    test: {
+    app: {
         server: 'localhost',
         user: 'sa',
         password: 'Pa55w.rd',
-        database: 'test',
+        database: 'app',
         options: options
     },
     advWorks: {
@@ -24,8 +24,8 @@ const config = {
     }
 }
 
-const test = async () => {
-    return sql.connect(config.test).then(pool => {      
+const app = async () => {
+    return sql.connect(config.app).then(pool => {      
         return pool.request()
     })
 }
@@ -36,4 +36,4 @@ const advWorks = async () => {
     })
 }
 
-module.exports = { test, advWorks }
+module.exports = { app, advWorks }

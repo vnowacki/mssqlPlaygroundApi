@@ -1,11 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const { test } = require('../db')
+const { app } = require('../db')
 const { authenticateToken } = require('../authToken')
 const sql = require("mssql")
 
 router.get('/', authenticateToken, (req, res) => {
-    test().then(conn => conn
+    app().then(conn => conn
         .query(`
             SELECT 
                 id,
@@ -20,27 +20,26 @@ router.get('/', authenticateToken, (req, res) => {
         .catch(err => console.log(err))
     )
 })
-router.get('/:id', authenticateToken, (req, res) => {
-    const { id } = req.params
-    test().then(conn => conn
-        .input('id', sql.UniqueIdentifier, id)
+router.get('/info', authenticateToken, (req, res) => {
+    app().then(conn => conn
+        .input('id', sql.UniqueIdentifier, req.loggedUser.uuid)
         .query(`
             SELECT 
+                id,
                 name,
-                surname, 
-                username,
-                ISNULL(FORMAT (last_logged, 'dd/MM/yyyy'), 'brak') as date_logged,
-                FORMAT (account_created, 'dd/MM/yyyy') as date_created
-            FROM app.users
+                surname,
+                ISNULL(FORMAT (last_logged, 'dd/MM/yyyy'), 'brak') as date_logged
+            FROM app.user_data
             WHERE id = @id
         `)
-        .then(response => res.send(response.recordset))
+        .then(response => res.send(response.recordset[0]))
         .catch(err => console.log(err))
     )
 })
 router.post('/', authenticateToken, (req, res) => {
-    const user = {...req.body}
-    test().then(conn => conn
+    const user = { ...req.body }
+    app().then(conn => conn
+        .input('executor', sql.UniqueIdentifier, req.loggedUser.uuid)
         .input('username', sql.VarChar(30), user.username)
         .input('password', sql.VarChar(100), user.password)
         .input('name', sql.NVarChar(30), user.name)
@@ -55,8 +54,9 @@ router.post('/', authenticateToken, (req, res) => {
 router.patch('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
     const user = {...req.body}
-    test().then(conn => conn
+    app().then(conn => conn
         .input('id', sql.UniqueIdentifier, id)
+        .input('executor', sql.UniqueIdentifier, req.loggedUser.uuid)
         .input('username', sql.VarChar(30), user.username)
         .input('password', sql.VarChar(100), user.password)
         .input('name', sql.NVarChar(30), user.name)
@@ -69,15 +69,16 @@ router.patch('/:id', authenticateToken, (req, res) => {
 })
 router.delete('/:id', authenticateToken, (req, res) => {
     const { id } = req.params
-    const user = req.user
-    if(id !== user.uuid)
-        test().then(conn => conn
+    if(id !== req.loggedUser.uuid)
+        app().then(conn => conn
             .input('id', sql.UniqueIdentifier, id)
-            .query(`DELETE FROM app.users WHERE id = @id`)
-            .then(response => res.send({ deleted: parseInt(response.rowsAffected[0]) }))
+            .input('executor', sql.UniqueIdentifier, req.loggedUser.uuid)
+            .output('response', sql.VarChar(sql.MAX))
+            .execute('dbo.deleteUser')
+            .then(response => res.send(response.output))
             .catch(err => console.log(err))
         )
-    else res.send({ error: 'loggedUserDeletion' })
+    else res.send({ response: 'loggedUserDeletion' })
 })
 
 module.exports = router;

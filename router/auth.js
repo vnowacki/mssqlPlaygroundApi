@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { test } = require('../db')
+const { app } = require('../db')
 const { generateAccessToken } = require('../authToken')
 const sql = require("mssql")
 const jwt = require('jsonwebtoken')
@@ -10,7 +10,7 @@ let refreshTokens = []
 
 router.post('/', (req, res) => {
     const user = {...req.body}
-    test().then(conn => conn
+    app().then(conn => conn
         .input('username', sql.VarChar(30), user.username)
         .input('password', sql.VarChar(100), user.password)
         .output('response', sql.VarChar(sql.MAX))
@@ -37,7 +37,7 @@ router.post('/token', (req, res) => {
     if(!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (err, user) => {
         if(err) return res.sendStatus(403)
-        const accessToken = generateAccessToken({ uuid: user.uuid, username: user.username, password: user.password }, TOKEN_EXPIRY)
+        const accessToken = generateAccessToken(user, TOKEN_EXPIRY)
         res.json({ accessToken: accessToken })
     })
 })
