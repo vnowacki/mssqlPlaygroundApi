@@ -48,6 +48,7 @@ router.post('/', authenticateToken, (req, res) => {
         .input('name', sql.NVarChar(30), user.name)
         .input('surname', sql.NVarChar(30), user.surname)
         .input('lastLogged', sql.DateTime, user.lastLogged)
+        .input('permLevel', sql.VarChar(10), user.permLevel)
         .output('response', sql.VarChar(sql.MAX))
         .execute('dbo.insertUser')
         .then(response => res.send(response.output))
