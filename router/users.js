@@ -104,9 +104,8 @@ router.delete('/:id', authenticateToken, (req, res) => {
 })
 router.put('/:id/picture', authenticateToken, upload.fields([{ name: "picture", maxCount: 1 }]), (req, res) => {
     const { id } = req.params
-    if (req.files.picture.length) {
+    if (req.files && req.files.picture && req.files.picture.length) {
         const picture = req.files.picture[0];
-        console.log(picture)
         app().then(conn => conn
             .input('id', sql.UniqueIdentifier, id)
             .input('picture', sql.VarBinary(sql.MAX), picture.buffer)
@@ -121,5 +120,17 @@ router.put('/:id/picture', authenticateToken, upload.fields([{ name: "picture", 
     }
     else res.send({ response: 'noFile' })
 })
-
+router.delete('/:id/picture', authenticateToken, (req, res) => {
+    const { id } = req.params
+    app().then(conn => conn
+        .input('id', sql.UniqueIdentifier, id)
+        .query(`
+            UPDATE app.users
+            SET picture = NULL
+            WHERE id = @id
+        `)
+        .then(data => res.send({ response: data }))
+        .catch(err => console.log(err))
+    )
+})
 module.exports = router;
