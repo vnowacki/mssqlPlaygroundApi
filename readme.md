@@ -43,6 +43,7 @@ Requests with header: Authorization = Bearer TOKEN
 -   POST /users (body: username, password, name, surname, lastLogged) - insert user to database
 -   PATCH /users/id (body: username, password, name, surname, lastLogged) - update user in database
 -   DELETE /users/id - delete user from database
+-   PUT /users/:id/picture - update user picture
 
 ## Run
 -   npm install (install dependencies)
