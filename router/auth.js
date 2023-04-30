@@ -5,7 +5,7 @@ const { generateAccessToken } = require('../authToken')
 const sql = require("mssql")
 const jwt = require('jsonwebtoken')
 
-const TOKEN_EXPIRY = '15m'
+const TOKEN_EXPIRY = '10m'
 let refreshTokens = []
 
 router.post('/', (req, res) => {
@@ -22,7 +22,7 @@ router.post('/', (req, res) => {
                 const accessToken = generateAccessToken(user, TOKEN_EXPIRY)
                 const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN)
                 refreshTokens.push(refreshToken)
-                res.send({accessToken: accessToken, refreshToken: refreshToken })
+                res.send({ accessToken: accessToken, refreshToken: refreshToken })
             }
             else {
                 res.send(response.output)
@@ -33,12 +33,13 @@ router.post('/', (req, res) => {
 })
 router.post('/token', (req, res) => {
     const refreshToken = req.body.token
-    if(refreshToken == null) return res.sendStatus(401)
+    if(!refreshToken) return res.sendStatus(401)
     if(!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN, (err, user) => {
         if(err) return res.sendStatus(403)
+        delete user.iat
         const accessToken = generateAccessToken(user, TOKEN_EXPIRY)
-        res.json({ accessToken: accessToken })
+        res.send({ accessToken: accessToken })
     })
 })
 router.delete('/', (req, res) => {
