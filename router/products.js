@@ -6,13 +6,15 @@ const { authenticateToken } = require('../authToken')
 const sql = require("mssql")
 const multer = require('multer')
 const upload = multer()
+const moment = require('moment')()
+const { toSqlDate } = require('../time')
 
 router.get('/categories', authenticateToken, (req, res) => {
     app().then(conn => conn
         .query(`
-            SELECT 
-                name,
-                description,
+            SELECT
+                id,
+                name
             FROM app.categories
             ORDER BY name
         `)
@@ -31,12 +33,11 @@ router.get('/', authenticateToken, (req, res) => {
                 p.price,
                 p.weight,
                 FORMAT (p.sellStartDate, 'dd/MM/yyyy') sell_start,
-                ISNULL(FORMAT (p.sellEndDate, 'dd/MM/yyyy'), 'nigdy') sell_end,
-                FORMAT (p.lastModified, 'dd/MM/yyyy') last_modified,
+                FORMAT (p.sellEndDate, 'dd/MM/yyyy') sell_end,
                 c.name category
             FROM app.products p
             INNER JOIN app.categories c ON p.category = c.id
-            ORDER BY p.name
+            ORDER BY c.name, p.name
         `)
         .then(response => res.send(response.recordset))
         .catch(err => console.log(err))
@@ -55,8 +56,7 @@ router.get('/:id', authenticateToken, (req, res) => {
                 p.price,
                 p.weight,
                 FORMAT (p.sellStartDate, 'dd/MM/yyyy') sell_start,
-                ISNULL(FORMAT (p.sellEndDate, 'dd/MM/yyyy'), 'nigdy') sell_end,
-                FORMAT (p.lastModified, 'dd/MM/yyyy') last_modified,
+                FORMAT (p.sellEndDate, 'dd/MM/yyyy') sell_end,
                 c.name category
             FROM app.products p
             INNER JOIN app.categories c ON p.category = c.id
@@ -71,13 +71,13 @@ router.post('/', authenticateToken, (req, res) => {
     app().then(conn => conn
         .input('executor', sql.UniqueIdentifier, req.loggedUser.uuid)
         .input('name', sql.NVarChar(100), product.name)
-        .input('description', sql.NVarChar(400), product.decription)
+        .input('description', sql.NVarChar(400), product.description)
         .input('quantity', sql.SmallInt, product.quantity)
         .input('price', sql.Money, product.price)
         .input('weight', sql.Decimal(8,2), product.weight)
-        .input('sellStartDate', sql.DateTime, product.sellStartDate)
-        .input('category', sql.NVarChar(100), product.category)
-        .output('response', sql.VarChar(sql.MAX))
+        .input('sellStartDate', sql.DateTime, (product.sellStartDate) ? product.sellStartDate : moment.format('YYYY-MM-DD HH:mm:ss'))
+        .input('category', sql.Int, product.category)
+        .output('status', sql.VarChar(sql.MAX))
         .execute('dbo.insertProduct')
         .then(response => res.send(response.output))
         .catch(err => console.log(err))
@@ -90,14 +90,13 @@ router.patch('/:id', authenticateToken, (req, res) => {
         .input('id', sql.UniqueIdentifier, id)
         .input('executor', sql.UniqueIdentifier, req.loggedUser.uuid)
         .input('name', sql.NVarChar(100), product.name)
-        .input('description', sql.NVarChar(400), product.decription)
+        .input('description', sql.NVarChar(400), product.description)
         .input('quantity', sql.SmallInt, product.quantity)
         .input('price', sql.Money, product.price)
         .input('weight', sql.Decimal(8,2), product.weight)
-        .input('sellStartDate', sql.DateTime, product.sellStartDate)
-        .input('sellEndDate', sql.DateTime, product.sellEndDate)
+        .input('sellEndDate', sql.DateTime, (product.sell_end) ? toSqlDate(product.sell_end) : sql.NULL)
         .input('category', sql.NVarChar(100), product.category)
-        .output('response', sql.VarChar(sql.MAX))
+        .output('status', sql.VarChar(sql.MAX))
         .execute('dbo.alterProduct')
         .then(response => res.send(response.output))
         .catch(err => console.log(err))
@@ -108,7 +107,7 @@ router.delete('/:id', authenticateToken, (req, res) => {
     app().then(conn => conn
         .input('id', sql.UniqueIdentifier, id)
         .input('executor', sql.UniqueIdentifier, req.loggedUser.uuid)
-        .output('response', sql.VarChar(sql.MAX))
+        .output('status', sql.VarChar(sql.MAX))
         .execute('dbo.deleteProduct')
         .then(response => res.send(response.output))
         .catch(err => console.log(err))

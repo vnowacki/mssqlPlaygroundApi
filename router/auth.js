@@ -13,16 +13,16 @@ router.post('/', (req, res) => {
     app().then(conn => conn
         .input('username', sql.VarChar(30), user.username)
         .input('password', sql.VarChar(100), user.password)
-        .output('response', sql.VarChar(sql.MAX))
+        .output('status', sql.VarChar(sql.MAX))
         .output('uuid', sql.UniqueIdentifier)
         .execute('dbo.loginUser')
         .then(response => {
-            if(response.output.response == 'success') {
+            if(response.output.status == 'loginSuccessfull') {
                 user.uuid = response.output.uuid
                 const accessToken = generateAccessToken(user, TOKEN_EXPIRY)
                 const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN)
                 refreshTokens.push(refreshToken)
-                res.send({ accessToken: accessToken, refreshToken: refreshToken })
+                res.send({ status: response.output.status, accessToken: accessToken, refreshToken: refreshToken })
             }
             else {
                 res.send(response.output)
